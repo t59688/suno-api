@@ -3,8 +3,7 @@
 > - ✅ Fixed race condition in route interception
 > - ✅ Fixed CAPTCHA iframe wait logic for reliable automation
 > - ✅ Updated default model to chirp-crow (v5 - latest)
->
-> **This fork works right now.** The original is broken.
+
 
 <div align="center">
   <h1 align="center">
