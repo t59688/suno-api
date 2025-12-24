@@ -10,23 +10,16 @@
       Suno AI API
   </h1>
   <p>Use API to call the music generation AI of Suno.ai and easily integrate it into agents like GPTs.</p>
-  <p>👉 We update quickly, please star.</p>
 </div>
 <p align="center">
-  <a target="_blank" href="./README.md">English</a> 
-  | <a target="_blank" href="./README_CN.md">简体中文</a> 
-  | <a target="_blank" href="./README_RU.md">русский</a> 
-  | <a target="_blank" href="https://suno.gcui.ai">Demo</a> 
-  | <a target="_blank" href="https://suno.gcui.ai/docs">Docs</a> 
-  | <a target="_blank" href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fgcui-art%2Fsuno-api&env=SUNO_COOKIE,TWOCAPTCHA_KEY,BROWSER,BROWSER_GHOST_CURSOR,BROWSER_LOCALE,BROWSER_HEADLESS&project-name=suno-api&repository-name=suno-api">Deploy with Vercel</a> 
-</p>
-<p align="center">
-  <a href="https://www.producthunt.com/products/gcui-art-suno-api-open-source-sunoai-api/reviews?utm_source=badge-product_review&utm_medium=badge&utm_souce=badge-gcui&#0045;art&#0045;suno&#0045;api&#0045;open&#0045;source&#0045;sunoai&#0045;api" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=577408&theme=light" alt="gcui&#0045;art&#0047;suno&#0045;api&#0058;Open&#0045;source&#0032;SunoAI&#0032;API - Use&#0032;API&#0032;to&#0032;call&#0032;the&#0032;music&#0032;generation&#0032;AI&#0032;of&#0032;suno&#0046;ai&#0046; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+  <a target="_blank" href="./README.md">English</a>
+  | <a target="_blank" href="./README_CN.md">简体中文</a>
+  | <a target="_blank" href="./README_RU.md">русский</a>
+  | <a target="_blank" href="https://suno.gcui.ai">Demo</a>
+  | <a target="_blank" href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzach-fau%2Fsuno-api&env=SUNO_COOKIE,TWOCAPTCHA_KEY,BROWSER,BROWSER_GHOST_CURSOR,BROWSER_LOCALE,BROWSER_HEADLESS&project-name=suno-api&repository-name=suno-api">Deploy with Vercel</a>
 </p>
 
-> 🔥 Check out my new project: [ReadPo - 10x Speed Up Your Reading and Writing](https://readpo.com?utm_source=github&utm_medium=suno-ai)
-
-![suno-api banner](https://github.com/gcui-art/suno-api/blob/main/public/suno-banner.png)
+![suno-api banner](https://github.com/zach-fau/suno-api/blob/main/public/suno-banner.png)
 
 ## Introduction
 
@@ -38,7 +31,7 @@ This implementation uses the paid [2Captcha](https://2captcha.com/about) service
 
 ## Demo
 
-We have deployed an example bound to a free Suno account, so it has daily usage limits, but you can see how it runs:
+You can see how it runs at the original project's demo (bound to a free Suno account with daily limits):
 [suno.gcui.ai](https://suno.gcui.ai)
 
 ## Features
@@ -64,7 +57,7 @@ We have deployed an example bound to a free Suno account, so it has daily usage 
 6. Click on it and switch over to the `Header` tab.
 7. Locate the `Cookie` section, hover your mouse over it, and copy the value of the Cookie.
 
-![get cookie](https://github.com/gcui-art/suno-api/blob/main/public/get-cookie-demo.gif)
+![get cookie](https://github.com/zach-fau/suno-api/blob/main/public/get-cookie-demo.gif)
 
 ### 2. Register on 2Captcha and top up your balance
 [2Captcha](https://2captcha.com/about) is a paid CAPTCHA solving service that uses real workers to solve the CAPTCHA and has high accuracy. It is needed because of Suno constantly requesting hCaptcha solving that currently isn't possible for free by any means.
@@ -83,7 +76,7 @@ You can choose your preferred deployment method:
 
 #### Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fgcui-art%2Fsuno-api&env=SUNO_COOKIE,TWOCAPTCHA_KEY,BROWSER,BROWSER_GHOST_CURSOR,BROWSER_LOCALE,BROWSER_HEADLESS&project-name=suno-api&repository-name=suno-api)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzach-fau%2Fsuno-api&env=SUNO_COOKIE,TWOCAPTCHA_KEY,BROWSER,BROWSER_GHOST_CURSOR,BROWSER_LOCALE,BROWSER_HEADLESS&project-name=suno-api&repository-name=suno-api)
 
 #### Run locally
 
@@ -93,13 +86,27 @@ cd suno-api
 npm install
 ```
 #### Docker
+
 >[!IMPORTANT]
 > GPU acceleration will be disabled in Docker. If you have a slow CPU, it is recommended to [deploy locally](#run-locally).
 
-Alternatively, you can use [Docker Compose](https://docs.docker.com/compose/). However, follow the step below before running.
+Build and run with [Docker Compose](https://docs.docker.com/compose/):
 
 ```bash
-docker compose build && docker compose up
+# Build the container
+docker compose build
+
+# Run in detached mode
+docker compose up -d
+
+# Test the API
+curl http://localhost:3000/api/get_limit
+
+# View logs
+docker compose logs -f
+
+# Stop the container
+docker compose down
 ```
 
 ### 4. Configure suno-api
@@ -146,8 +153,7 @@ it means the program is running normally.
 
 ### 6. Use Suno API
 
-You can check out the detailed API documentation at :
-[suno.gcui.ai/docs](https://suno.gcui.ai/docs)
+See the [API Reference](#api-reference) section below for available endpoints and usage examples.
 
 ## API Reference
 
@@ -169,9 +175,6 @@ Suno API currently mainly implements the following APIs:
 ```
 
 You can also specify the cookies in the `Cookie` header of your request, overriding the default cookies in the `SUNO_COOKIE` environment variable. This comes in handy when, for example, you want to use multiple free accounts at the same time.
-
-For more detailed documentation, please check out the demo site:
-[suno.gcui.ai/docs](https://suno.gcui.ai/docs)
 
 ## API Integration Code Examples
 
@@ -349,19 +352,26 @@ There are four ways you can support this project:
 
 ## Questions, Suggestions, Issues, or Bugs?
 
-We use [GitHub Issues](https://github.com/gcui-art/suno-api/issues) to manage feedback. Feel free to open an issue, and we'll address it promptly.
+We use [GitHub Issues](https://github.com/zach-fau/suno-api/issues) to manage feedback. Feel free to open an issue, and we'll address it promptly.
 
 ## License
 
 The license of this project is LGPL-3.0 or later. See [LICENSE](LICENSE) for more information.
 
-## Related Links
+## Credits & Related Links
 
-- Project repository: [github.com/gcui-art/suno-api](https://github.com/gcui-art/suno-api)
+**Original Project:**
+- Original repository: [gcui-art/suno-api](https://github.com/gcui-art/suno-api)
+- Demo site: [suno.gcui.ai](https://suno.gcui.ai)
+- Documentation: [suno.gcui.ai/docs](https://suno.gcui.ai/docs)
+
+This fork maintains compatibility and adds bug fixes for Suno v5. Credit to the original authors for the initial implementation.
+
+**This Fork:**
+- Repository: [zach-fau/suno-api](https://github.com/zach-fau/suno-api)
+
+**Related:**
 - Suno.ai official website: [suno.ai](https://suno.ai)
-- Demo: [suno.gcui.ai](https://suno.gcui.ai)
-- [Readpo](https://readpo.com?utm_source=github&utm_medium=suno-api): ReadPo is an AI-powered reading and writing assistant. Collect, curate, and create content at lightning speed.
-- Album AI: [Auto generate image metadata and chat with the album. RAG + Album.](https://github.com/gcui-art/album-ai)
 
 ## Statement
 
