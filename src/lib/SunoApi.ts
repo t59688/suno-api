@@ -841,12 +841,6 @@ class SunoApi {
     const browser = await this.launchBrowser();
     const page = await browser.newPage();
 
-    // When not headless, wait for DevTools to open so we can capture network requests
-    if (!yn(process.env.BROWSER_HEADLESS, { default: true })) {
-      logger.info('Waiting 5 seconds for DevTools to open... (switch to Network tab now!)');
-      await sleep(5);  // sleep() takes seconds, not ms!
-    }
-
     // STEP 1: Navigate to homepage first to let Clerk JS establish session
     // We don't have __session cookie - Clerk JS needs to create it by validating __client with auth.suno.com
     logger.info('Step 1: Navigating to suno.com homepage to establish Clerk session...');

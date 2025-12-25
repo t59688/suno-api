@@ -2,13 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-This fork is maintained separately from the [original gcui-art/suno-api](https://github.com/gcui-art/suno-api) which appears unmaintained since February 2024.
+This fork is maintained separately from the [original gcui-art/suno-api](https://github.com/gcui-art/suno-api)
 
 ## [Unreleased]
 
 ### Fixed
 
-#### Authentication Migration (December 2024)
+#### Authentication Migration 
 Suno migrated their Clerk authentication from `clerk.suno.com` to `auth.suno.com`. This broke all existing suno-api installations.
 
 **API Authentication:**
@@ -49,4 +49,4 @@ The browser session was redirecting to `accounts.suno.com/sign-in` because Clerk
 
 ## Original Project History
 
-The original project by [gcui-art](https://github.com/gcui-art/suno-api) was last updated in February 2024. This fork was created to maintain compatibility with Suno's evolving API and authentication system.
+The original project by [gcui-art](https://github.com/gcui-art/suno-api). This fork was created to maintain compatibility with Suno's evolving API and authentication system.
