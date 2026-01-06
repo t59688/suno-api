@@ -1,10 +1,10 @@
-> **🔥 Actively Maintained Fork** - The [original repo](https://github.com/gcui-art/suno-api) is no longer maintained. This fork includes critical fixes for Suno v5 compatibility:
-> - ✅ **Fixed auth migration** - Suno moved from `clerk.suno.com` to `auth.suno.com`
-> - ✅ **Fixed browser cookie handling** - Proper multi-domain Clerk cookie setup for CAPTCHA solving
-> - ✅ Updated UI selectors for Suno v5 interface changes
+> **Suno v5 Compatible** - Includes critical fixes for Suno v5:
+> - ✅ Auth endpoint migration (`clerk.suno.com` → `auth.suno.com`)
+> - ✅ Proper multi-domain Clerk cookie setup for CAPTCHA solving
+> - ✅ Updated UI selectors for Suno v5 interface
 > - ✅ Fixed race condition in route interception
-> - ✅ Fixed CAPTCHA iframe wait logic for reliable automation
-> - ✅ Updated default model to chirp-crow (v5 - latest)
+> - ✅ Fixed CAPTCHA iframe wait logic
+> - ✅ Default model: chirp-crow (v5 - latest)
 
 
 <div align="center">
@@ -17,11 +17,9 @@
   <a target="_blank" href="./README.md">English</a>
   | <a target="_blank" href="./README_CN.md">简体中文</a>
   | <a target="_blank" href="./README_RU.md">русский</a>
-  | <a target="_blank" href="https://suno.gcui.ai">Demo</a>
-  | <a target="_blank" href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzach-fau%2Fsuno-api&env=SUNO_COOKIE,TWOCAPTCHA_KEY,BROWSER,BROWSER_GHOST_CURSOR,BROWSER_LOCALE,BROWSER_HEADLESS&project-name=suno-api&repository-name=suno-api">Deploy with Vercel</a>
 </p>
 
-![suno-api banner](https://github.com/zach-fau/suno-api/blob/main/public/suno-banner.png)
+![suno-api banner](./public/suno-banner.png)
 
 ## Introduction
 
@@ -30,11 +28,6 @@ Suno is an amazing AI music service. Although the official API is not yet availa
 We discovered that some users have similar needs, so we decided to open-source this project, hoping you'll like it.
 
 This implementation uses the paid [2Captcha](https://2captcha.com/about) service (a.k.a. ruCaptcha) to solve the hCaptcha challenges automatically and does not use any already made closed-source paid Suno API implementations.
-
-## Demo
-
-You can see how it runs at the original project's demo (bound to a free Suno account with daily limits):
-[suno.gcui.ai](https://suno.gcui.ai)
 
 ## Features
 
@@ -59,7 +52,7 @@ You can see how it runs at the original project's demo (bound to a free Suno acc
 6. Click on it and switch over to the `Header` tab.
 7. Locate the `Cookie` section, hover your mouse over it, and copy the value of the Cookie.
 
-![get cookie](https://github.com/zach-fau/suno-api/blob/main/public/get-cookie-demo.gif)
+![get cookie](./public/get-cookie-demo.gif)
 
 ### 2. Register on 2Captcha and top up your balance
 [2Captcha](https://2captcha.com/about) is a paid CAPTCHA solving service that uses real workers to solve the CAPTCHA and has high accuracy. It is needed because of Suno constantly requesting hCaptcha solving that currently isn't possible for free by any means.
@@ -354,7 +347,7 @@ There are four ways you can support this project:
 
 ## Questions, Suggestions, Issues, or Bugs?
 
-We use [GitHub Issues](https://github.com/zach-fau/suno-api/issues) to manage feedback. Feel free to open an issue, and we'll address it promptly.
+We use GitHub Issues to manage feedback. Feel free to open an issue, and we'll address it promptly.
 
 ## License
 
@@ -362,17 +355,8 @@ The license of this project is LGPL-3.0 or later. See [LICENSE](LICENSE) for mor
 
 ## Credits & Related Links
 
-**Original Project:**
-- Original repository: [gcui-art/suno-api](https://github.com/gcui-art/suno-api)
-- Demo site: [suno.gcui.ai](https://suno.gcui.ai)
-- Documentation: [suno.gcui.ai/docs](https://suno.gcui.ai/docs)
+Based on [gcui-art/suno-api](https://github.com/gcui-art/suno-api). Credit to the original authors for the initial implementation.
 
-This fork maintains compatibility and adds bug fixes for Suno v5. Credit to the original authors for the initial implementation.
-
-**This Fork:**
-- Repository: [zach-fau/suno-api](https://github.com/zach-fau/suno-api)
-
-**Related:**
 - Suno.ai official website: [suno.ai](https://suno.ai)
 
 ## Statement
