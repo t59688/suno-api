@@ -1,11 +1,38 @@
-version: '3'
-
 services:
-  suno-api:
+  sn2api:
     build:
       context: .
-      args:
-        SUNO_COOKIE: ${SUNO_COOKIE}
+      dockerfile: Dockerfile
+      # 可选构建参数（如需自定义镜像源，取消注释并设置）：
+      # args:
+      #   DEBIAN_MIRROR: ${DEBIAN_MIRROR:-mirrors.aliyun.com}
+      #   NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmmirror.com}
+      #   PLAYWRIGHT_DOWNLOAD_HOST: ${PLAYWRIGHT_DOWNLOAD_HOST:-https://npmmirror.com/mirrors/playwright/}
+    image: suno-api:latest
+    container_name: sn2api
     ports:
-      - "3000:3000"
-    env_file: ".env"
+      - "${HOST_PORT:-3100}:3000"
+    env_file:
+      - ".env"
+    environment:
+      - NODE_ENV=production
+      - HOST_PORT=3100
+      - HOSTNAME=0.0.0.0
+      # 代理 / Clash 配置（模仿 other/docker-compose.yml，可按需修改）
+      - ENABLE_PROXY=${ENABLE_PROXY:-false}
+      - CLASH_SUBSCRIBE_URL=${CLASH_SUBSCRIBE_URL:-}
+      - CLASH_SUBSCRIPTION_INDEX=${CLASH_SUBSCRIPTION_INDEX:-1}
+      - PROXY_HTTP=${PROXY_HTTP:-http://127.0.0.1:7890}
+      - PROXY_HTTPS=${PROXY_HTTPS:-http://127.0.0.1:7890}
+      - PROXY_ALL=${PROXY_ALL:-socks5://127.0.0.1:7890}
+      - PROXY_NO_PROXY=${PROXY_NO_PROXY:-localhost,127.0.0.1,::1}
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # 持久化目录（按需改路径）
+    volumes:
+      - ./data:/app/data

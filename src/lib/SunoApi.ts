@@ -7,7 +7,7 @@ import * as cookie from 'cookie';
 import { randomUUID } from 'node:crypto';
 import { Solver } from '@2captcha/captcha-solver';
 import { paramsCoordinates } from '@2captcha/captcha-solver/dist/structs/2captcha';
-import { BrowserContext, Page, Locator, chromium, firefox } from 'rebrowser-playwright-core';
+import type { BrowserContext, Page, Locator, BrowserType } from 'rebrowser-playwright-core';
 import { createCursor, Cursor } from 'ghost-cursor-playwright';
 import { promises as fs } from 'fs';
 import path from 'node:path';
@@ -584,7 +584,8 @@ class SunoApi {
    * Get the BrowserType from the `BROWSER` environment variable.
    * @returns {BrowserType} chromium, firefox or webkit. Default is chromium
    */
-  private getBrowserType() {
+  private async getBrowserType(): Promise<BrowserType> {
+    const { chromium, firefox } = await import('rebrowser-playwright-core');
     const browser = process.env.BROWSER?.toLowerCase();
     switch (browser) {
       case 'firefox':
@@ -617,7 +618,8 @@ class SunoApi {
     // Auto-open DevTools when not headless (for debugging)
     if (!yn(process.env.BROWSER_HEADLESS, { default: true }))
       args.push('--auto-open-devtools-for-tabs');
-    const browser = await this.getBrowserType().launch({
+    const browserType = await this.getBrowserType();
+    const browser = await browserType.launch({
       args,
       headless: yn(process.env.BROWSER_HEADLESS, { default: true })
     });

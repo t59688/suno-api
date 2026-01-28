@@ -1,0 +1,78 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_* 变量必须在构建时传入（会被内联到客户端代码）
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://music.aizeek.com}
+    container_name: sonicforge-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-13000}:3000"
+    environment:
+      # 数据库配置（从环境变量读取，通过 .env 文件传入）
+      - DATABASE_URL=${DATABASE_URL}
+      
+      # JWT 配置
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      
+      # Node 环境
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - PRISMA_LOG_LEVEL=${PRISMA_LOG_LEVEL:-error}
+      
+      # API 配置（可选）
+      - SUNO_API_URL=${SUNO_API_URL:-}
+      - SUNO_API_BASE_URL=${SUNO_API_BASE_URL:-}
+      - SUNO_API_KEY=${SUNO_API_KEY:-}
+      - YUNWU_API_BASE_URL=${YUNWU_API_BASE_URL:-}
+      - YUNWU_API_KEY=${YUNWU_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      
+      # 系统配置（可选，这些也可以通过管理后台配置）
+      - ALLOW_REGISTRATION=${ALLOW_REGISTRATION:-true}
+      - AUTO_APPROVE_USERS=${AUTO_APPROVE_USERS:-false}
+      - DEFAULT_USER_ROLE=${DEFAULT_USER_ROLE:-USER}
+      - MAX_TASKS_PER_USER=${MAX_TASKS_PER_USER:-100}
+      - MAX_TASK_RETRIES=${MAX_TASK_RETRIES:-3}
+      - TASK_TIMEOUT_MINUTES=${TASK_TIMEOUT_MINUTES:-30}
+      - ALLOW_PUBLIC_TASKS=${ALLOW_PUBLIC_TASKS:-true}
+      - RATE_LIMIT_PER_MINUTE=${RATE_LIMIT_PER_MINUTE:-10}
+      - MAINTENANCE_MODE=${MAINTENANCE_MODE:-false}
+      - MAINTENANCE_MESSAGE=${MAINTENANCE_MESSAGE:-}
+      - SESSION_EXPIRE_HOURS=${SESSION_EXPIRE_HOURS:-24}
+      - ENABLE_ANALYTICS=${ENABLE_ANALYTICS:-false}
+      
+      # 代理配置（可选，用于访问被墙的资源）
+      - ENABLE_PROXY=${ENABLE_PROXY:-false}
+      - CLASH_SUBSCRIBE_URL=${CLASH_SUBSCRIBE_URL:-}
+      - CLASH_SUBSCRIPTION_INDEX=${CLASH_SUBSCRIPTION_INDEX:-1}
+      - PROXY_HTTP=${PROXY_HTTP:-http://127.0.0.1:7890}
+      - PROXY_HTTPS=${PROXY_HTTPS:-http://127.0.0.1:7890}
+      - PROXY_ALL=${PROXY_ALL:-socks5://127.0.0.1:7890}
+      - PROXY_NO_PROXY=${PROXY_NO_PROXY:-localhost,127.0.0.1,::1}
+    env_file:
+      - .env
+    volumes:
+      # 数据持久化（如果需要）
+      - ./data/uploads:/app/data/uploads
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "production"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - aizk_network
+      
+networks:
+  aizk_network:
+    external: true  # 关键：声明为外部网络
