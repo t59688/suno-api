@@ -730,14 +730,25 @@ class SunoApi {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
         logger.info('Sending the CAPTCHA to 2Captcha');
+        logger.info(`[DEBUG] CAPTCHA_SCREENSHOT timeout value: ${SunoApi.TIMEOUTS.CAPTCHA_SCREENSHOT}, type: ${typeof SunoApi.TIMEOUTS.CAPTCHA_SCREENSHOT}`);
+        logger.info(`[DEBUG] challenge type: ${typeof challenge}, constructor: ${challenge?.constructor?.name}`);
+        
+        const screenshotBuffer = await challenge.screenshot({ timeout: SunoApi.TIMEOUTS.CAPTCHA_SCREENSHOT });
+        logger.info(`[DEBUG] screenshot buffer type: ${typeof screenshotBuffer}, length: ${screenshotBuffer?.length}`);
+        
         const payload: paramsCoordinates = {
-          body: (await challenge.screenshot({ timeout: SunoApi.TIMEOUTS.CAPTCHA_SCREENSHOT })).toString('base64'),
+          body: screenshotBuffer.toString('base64'),
           lang: process.env.BROWSER_LOCALE
         };
         if (isDrag) {
           // Provide instructions for drag-type CAPTCHA
           payload.textinstructions = 'CLICK on the shapes at their edge or center as shown above—please be precise!';
-          payload.imginstructions = (await fs.readFile(path.join(process.cwd(), 'public', 'drag-instructions.jpg'))).toString('base64');
+          const cwd = String(process.cwd());
+          logger.info(`[DEBUG] process.cwd() type: ${typeof process.cwd()}, value: ${process.cwd()}`);
+          logger.info(`[DEBUG] cwd type: ${typeof cwd}, value: ${cwd}`);
+          const imagePath = path.join(cwd, 'public', 'drag-instructions.jpg');
+          logger.info(`[DEBUG] imagePath type: ${typeof imagePath}, value: ${imagePath}`);
+          payload.imginstructions = (await fs.readFile(imagePath)).toString('base64');
         }
         return await this.solver.coordinates(payload) as unknown as CaptchaSolution;
       } catch(err) {

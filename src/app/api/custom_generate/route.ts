@@ -27,6 +27,9 @@ export async function POST(req: NextRequest) {
       });
     } catch (error: any) {
       console.error('Error generating custom audio:', error);
+      console.error('[DEBUG] Error stack:', error.stack);
+      console.error('[DEBUG] Error type:', typeof error);
+      console.error('[DEBUG] Error keys:', Object.keys(error));
       return new NextResponse(JSON.stringify({ error: error.response?.data?.detail || error.toString() }), {
         status: error.response?.status || 500,
         headers: {

@@ -30,6 +30,9 @@ export async function POST(req: NextRequest) {
       const errorStatus = error.response?.status || 500;
 
       console.error('Error generating custom audio:', errorMessage);
+      console.error('[DEBUG] Error stack:', error.stack);
+      console.error('[DEBUG] Error type:', typeof error);
+      console.error('[DEBUG] Error keys:', Object.keys(error));
 
       if (errorStatus === 402) {
         return new NextResponse(JSON.stringify({ error: errorMessage }), {
