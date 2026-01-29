@@ -4,6 +4,7 @@
  */
 
 import { initializeGlobalPool } from './global-pool';
+import { migrateCreditsFields } from './migrate-credits';
 
 // 标记是否已初始化
 let initialized = false;
@@ -22,6 +23,9 @@ export async function initAccountPoolSystem() {
     console.log('='.repeat(60));
     console.log('账号池管理系统启动中...');
     console.log('='.repeat(60));
+
+    // 执行数据库迁移
+    migrateCreditsFields();
 
     // 初始化全局账号池
     await initializeGlobalPool();

@@ -27,16 +27,40 @@ export class MaintenanceService {
   }
 
   /**
+   * 获取 2Captcha API Key
+   * 优先从数据库读取,其次从环境变量
+   */
+  private getTwoCaptchaKey(): string | undefined {
+    const dbKey = this.dbManager.getConfig('twocaptcha_key');
+    return dbKey || process.env.TWOCAPTCHA_KEY;
+  }
+
+  /**
    * 健康检查
    * 调用 SunoApi 的 getCredits 方法验证 Cookie 有效性
+   * 同时更新账号的积分信息
    * @param account 要检查的账号
    * @returns 是否健康
    */
   public async healthCheck(account: Account): Promise<boolean> {
     try {
       // 使用账号的 Cookie 创建 SunoApi 实例并调用 getCredits
-      const api = await sunoApi(account.cookie);
-      await api.getCredits();
+      const twocaptchaKey = this.getTwoCaptchaKey();
+      const api = await sunoApi(account.cookie, twocaptchaKey);
+      const credits = await api.getCredits() as any;
+      
+      console.log(`[健康检查] 账号 ${account.id.slice(0, 8)} 获取到的积分数据:`, credits);
+      
+      // 更新账号的积分信息
+      const updated = this.dbManager.updateAccount(account.id, {
+        creditsLeft: credits.credits_left,
+        monthlyLimit: credits.monthly_limit,
+        monthlyUsage: credits.monthly_usage,
+        creditsUpdatedAt: Date.now(),
+      });
+      
+      console.log(`[健康检查] 账号 ${account.id.slice(0, 8)} 数据库更新结果:`, updated);
+      
       return true;
     } catch (error) {
       console.error(`账号 ${account.id} 健康检查失败:`, error);
@@ -47,19 +71,33 @@ export class MaintenanceService {
   /**
    * 保活操作
    * 使用 SunoApi 执行轻量级操作以保持 Cookie 活跃
+   * 同时更新账号的积分信息
    * @param account 要保活的账号
    * @returns 维护结果
    */
   public async keepAlive(account: Account): Promise<MaintenanceResult> {
     try {
       // 使用账号的 Cookie 创建 SunoApi 实例
-      const api = await sunoApi(account.cookie);
+      const twocaptchaKey = this.getTwoCaptchaKey();
+      const api = await sunoApi(account.cookie, twocaptchaKey);
       
       // 调用 keepAlive 方法保持会话活跃
       await api.keepAlive(true);
       
-      // 调用 getCredits 验证保活是否成功
-      await api.getCredits();
+      // 调用 getCredits 验证保活是否成功并获取积分信息
+      const credits = await api.getCredits() as any;
+
+      console.log(`[保活] 账号 ${account.id.slice(0, 8)} 获取到的积分数据:`, credits);
+
+      // 更新账号的积分信息
+      const updated = this.dbManager.updateAccount(account.id, {
+        creditsLeft: credits.credits_left,
+        monthlyLimit: credits.monthly_limit,
+        monthlyUsage: credits.monthly_usage,
+        creditsUpdatedAt: Date.now(),
+      });
+
+      console.log(`[保活] 账号 ${account.id.slice(0, 8)} 数据库更新结果:`, updated);
 
       return {
         accountId: account.id,

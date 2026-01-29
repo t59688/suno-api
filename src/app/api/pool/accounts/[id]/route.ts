@@ -183,6 +183,7 @@ export async function DELETE(
 /**
  * GET /api/pool/accounts/[id]
  * 获取单个账号信息
+ * 查询参数: full=true 返回完整 Cookie
  */
 export async function GET(
   req: NextRequest,
@@ -196,6 +197,8 @@ export async function GET(
     }
 
     const { id } = params;
+    const { searchParams } = new URL(req.url);
+    const showFull = searchParams.get('full') === 'true';
 
     // 获取账号信息
     const account = dbManager.getAccount(id);
@@ -207,16 +210,20 @@ export async function GET(
       );
     }
 
-    // 返回账号信息（Cookie 脱敏）
+    // 返回账号信息（根据参数决定是否脱敏）
     return NextResponse.json({
       success: true,
       account: {
         id: account.id,
-        cookie: maskCookie(account.cookie),
+        cookie: showFull ? account.cookie : maskCookie(account.cookie),
         status: account.status,
         supportedModels: account.supportedModels,
         note: account.note,
         lastUpdated: account.lastUpdated,
+        creditsLeft: account.creditsLeft,
+        monthlyLimit: account.monthlyLimit,
+        monthlyUsage: account.monthlyUsage,
+        creditsUpdatedAt: account.creditsUpdatedAt,
       },
     });
   } catch (error: any) {

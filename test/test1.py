@@ -2,11 +2,7 @@ import requests
 import json
 import time
 
-BASE_URL = "http://10.0.39.31:3100"
-# TODO: 把这里替换成你在 suno.com/create 抓到的完整 Cookie 字符串（整条粘过来）
-SUNO_COOKIE = (
-    "__client=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdW5vLmNvbS9jbGFpbXMvY2xpZW50X2lkIjoiY2xpZW50X2pIV2dGVjM4bXh6UnRlRW1VRE1Xd2siLCJzdW5vLmNvbS9jbGFpbXMvdG9rZW5fdHlwZSI6InJlZnJlc2giLCJpc3MiOiJodHRwczovL2F1dGguc3Vuby5jb20iLCJleHAiOjE4MDExMzk5Mzh9.MIJoTQPyTQLPKmkqfqR1qcVvRt7ujh4OHYdjdIPHiCYfHqmNasVdvcjcVJlOlNt279xDNFGo2ZqVlXVMa549CHQV6bKZaI_b6Eq04eBaMVye77jR5XpS5Mh02Vb0BUY9nOYdxzY4gRjBD_8Xg5iD5VniBxwCNX6icBakSzFra8XV0W7UAQOuI8OO0-mrM9Ci7JXto6GG4AHzDnH2bC7Mb5TgOUWygMROYBV9KsWVk3gA8MNbsww2evB-Llh-3i2ZNF1GfW1Jipwo-oeoMVAXPE9F0s71SwjdqfUxkdWbjZSNFhZCaBTUVIr3T5TcWgX0ibkA2ap5sgnBDcIlSWYyrw; __client_Jnxw-muT=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdW5vLmNvbS9jbGFpbXMvY2xpZW50X2lkIjoiY2xpZW50X2pIV2dGVjM4bXh6UnRlRW1VRE1Xd2siLCJzdW5vLmNvbS9jbGFpbXMvdG9rZW5fdHlwZSI6InJlZnJlc2giLCJpc3MiOiJodHRwczovL2F1dGguc3Vuby5jb20iLCJleHAiOjE4MDExMzk5Mzh9.MIJoTQPyTQLPKmkqfqR1qcVvRt7ujh4OHYdjdIPHiCYfHqmNasVdvcjcVJlOlNt279xDNFGo2ZqVlXVMa549CHQV6bKZaI_b6Eq04eBaMVye77jR5XpS5Mh02Vb0BUY9nOYdxzY4gRjBD_8Xg5iD5VniBxwCNX6icBakSzFra8XV0W7UAQOuI8OO0-mrM9Ci7JXto6GG4AHzDnH2bC7Mb5TgOUWygMROYBV9KsWVk3gA8MNbsww2evB-Llh-3i2ZNF1GfW1Jipwo-oeoMVAXPE9F0s71SwjdqfUxkdWbjZSNFhZCaBTUVIr3T5TcWgX0ibkA2ap5sgnBDcIlSWYyrw; ab.storage.sessionId.b67099e5-3183-4de8-8f8f-fdea9ac93d15=g%3A5b85b8ea-fa81-49cc-87b0-d6eb0c405f68%7Ce%3A1769605747753%7Cc%3A1769603947753%7Cl%3A1769603947753; ab.storage.deviceId.b67099e5-3183-4de8-8f8f-fdea9ac93d15=g%3Ab102044e-6f60-4ef5-9198-53d8d05c094a%7Ce%3Aundefined%7Cc%3A1767973423451%7Cl%3A1769603947754; ab.storage.userId.b67099e5-3183-4de8-8f8f-fdea9ac93d15=g%3Aa07eea06-a552-4f99-a762-971862f93c0d%7Ce%3Aundefined%7Cc%3A1769603947752%7Cl%3A1769603947755; __stripe_sid=9c935976-d690-4937-9ff4-a011e8202f9c2c5914; _scid_r=mpYcb53Jh3cJCr9LRLy4NoAr2OL_5XKHD6TFmg; _ga_7B0KEDD7XP=GS2.1.s1769603914$o13$g1$t1769603984$j60$l0$h0$dA12SekR1Rv1knAVv1kSZaBLVqjyyG5yizg; ax_visitor=%7B%22firstVisitTs%22%3A1768307539958%2C%22lastVisitTs%22%3A1769435068474%2C%22currentVisitStartTs%22%3A1769603915805%2C%22ts%22%3A1769603984658%2C%22visitCount%22%3A8%7D; _sp_id.e685=4694ae23-15ac-4153-b763-82a046791aec.1768307552.9.1769603984.1769439785.a4bce2a0-ca79-495c-9683-34feea9a30dd.883d3b57-0281-4a75-acef-cceb2c338c6c.1ae89c7a-6511-4942-865f-ae7c56bf34fd.1769603926302.9; _uetsid=4513bc90fc4611f08037371135d94034|9qgscs|2|g33|0|2219; _uetvid=ce78f9e0e19e11f0a62937c38b501f36|1ifznki|1769603952926|6|1|bat.bing.com/p/conversions/c/y; tatari-session-cookie=86b92bad-7550-09e9-168a-60ee6619eef9; ttcsid_CT67HURC77UB52N3JFBG=1769603926294::mtwwx-HRm0NMooZ2MNpU.7.1769603985056.1; ttcsid=1769603926295::AugTXlru7Au8ApPjIMx-.7.1769603985056.0"
-)
+BASE_URL = "http://127.0.0.1:3000"
 
 
 def poll_until_complete(clip_ids, max_wait_time=300, poll_interval=5):
@@ -23,7 +19,6 @@ def poll_until_complete(clip_ids, max_wait_time=300, poll_interval=5):
     """
     url = f"{BASE_URL}/api/get"
     headers = {
-        "Cookie": SUNO_COOKIE,
     }
     
     start_time = time.time()
@@ -90,69 +85,61 @@ def custom_generate_test():
 
     headers = {
         "Content-Type": "application/json",
-        # 关键：把 Suno 的 Cookie 通过 HTTP 头传给 suno-api
-        "Cookie": SUNO_COOKIE,
     }
 
     payload = {
         # 自定义歌词 / 文本
-        "prompt": """[Intro] [Glockenspiel and soft guitar]
+        "prompt": """
+        [Intro - Music Box and Chimes]
+*soft wind chimes*
+(la la la~) [whispered, gentle]
 
-[Verse 1] [Child voice, Curious and bright]
-天上下来白白的
-一片一片轻轻飘
-伸出小手接一片
-冰冰凉凉会融掉
+[Verse 1]
+小兔子跳进了星光森林
+遇见了会唱歌的小星星
+它们说啊说着魔法的语言
+邀请她一起跳舞到天明
 
-[Chorus] [Playful, with cello warmth]
-是面粉吗
-从天空洒下来
-是面粉吗
-铺满整个世界
-(Background: ding ding ding)
-妈妈说这叫做雪
-好美的雪
+[Chorus - Bright and Cheerful]
+闪呀闪，亮呀亮
+森林里藏着小秘密
+转呀转，跳呀跳
+和月亮姐姐说悄悄话
 
-[Verse 2] [Child voice, Excited]
-踩在上面咯吱咯吱响
-留下小小脚印一双双
-堆个雪人圆圆胖胖
-给它围上红色的围巾长长
+[Verse 2]
+树洞里住着彩虹色的小精灵
+它们用露珠画出美丽的梦境
+花朵们在夜晚轻轻歌唱
+给勇敢的孩子们带来魔法糖
 
-[Chorus] [Fuller, strings enter]
-不是面粉啊
-是雪花在飞舞
-不是面粉啊
-是冬天的礼物
-(Background: ding ding ding)
-原来这就是雪
-好美的雪
+[Chorus - Bright and Cheerful]
+闪呀闪，亮呀亮
+森林里藏着小秘密
+转呀转，跳呀跳
+和月亮姐姐说悄悄话
 
-[Bridge] [Instrumental, Glockenspiel solo with orchestral swell]
-(Glockenspiel dances over strings)
+[Bridge - Soft and Mysterious]
+[Whispered vocals]
+(嘘——听) *gentle bell*
+风儿带来了什么消息？
+(是谁在那里？) [echoed softly]
+原来是梦想在开花结果
 
-[Verse 3] [Child voice, Tender and wondering]
-第一次看到这样的白
-第一次感觉这样的爱
-世界变成童话的模样
-我要记住这一天直到长大
+[Chorus - Building to Joy]
+闪呀闪，亮呀亮
+森林里藏着小秘密
+转呀转，跳呀跳
+和月亮姐姐说悄悄话
 
-[Chorus] [Full warmth, All elements]
-这就是雪啊
-像梦一样降落
-这就是雪啊
-我心里的快乐
-(Background: ding ding ding)
-我永远记得这雪
-好美的雪
-
-[Outro] [Fade, Glockenspiel and guitar]
-面粉一样的雪
-(Glockenspiel fades with soft triangle)""",
+[Outro - Gentle Fade]
+(la la la~) [soft, dreamy]
+*music box melody*
+[Fade out with chimes]
+        """,
         # 音乐风格标签
-        "tags": """A child vocalist with a clear, innocent soprano voice delivers playful and curious vocals. The song is in a major key, creating a joyful and whimsical mood. The tempo is moderate at around 100 BPM, with a gentle 3/4 waltz rhythm. A glockenspiel provides delicate, crystalline melodies that mimic falling snowflakes, accompanied by a soft acoustic guitar with fingerpicked arpeggios. A warm cello adds depth in the chorus, playing sustained notes that evoke wonder and tenderness. Light percussion enters subtly with brushed snare and soft triangle hits. The production is clean and spacious, with natural reverb creating an intimate, magical atmosphere. Strings swell gently in the bridge, adding orchestral warmth. The song structure follows a verse-chorus pattern with a brief instrumental interlude. The overall mood is enchanting and innocent, reminiscent of children's music with influences from contemporary classical and folk traditions.""",
+        "tags": """A gentle female vocalist delivers a sweet, nurturing melody with a clear soprano range over a whimsical arrangement featuring glockenspiel, music box, and soft acoustic guitar arpeggios. The song is in a major key with a moderate tempo (andante range, 80-90 BPM), creating a playful yet soothing atmosphere. The vocal delivery is warm and expressive, with a storytelling quality that captures childlike wonder. Light orchestral strings provide harmonic support, while soft chimes and subtle harp glissandos add magical texture. There are gentle hand percussion elements (finger snaps, soft tambourine) that maintain a light, bouncing rhythm without overwhelming the delicate arrangement. The production is clean and spacious, with natural reverb that creates an intimate yet enchanted atmosphere.""",
         # 歌名
-        "title": "Python Suno Custom Test",
+        "title": "星光森林的秘密",
         # 是否纯伴奏
         "make_instrumental": False,
         # 是否等待音频生成完成（服务端会帮你轮询 Suno 状态）

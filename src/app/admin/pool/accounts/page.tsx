@@ -13,6 +13,10 @@ interface Account {
   supportedModels: string[];
   note: string;
   lastUpdated: number;
+  creditsLeft?: number;
+  monthlyLimit?: number;
+  monthlyUsage?: number;
+  creditsUpdatedAt?: number;
 }
 
 /**
@@ -42,6 +46,14 @@ export default function AccountsPage() {
     note: '',
   });
   const [editLoading, setEditLoading] = useState(false);
+
+  // 查看完整 Cookie
+  const [viewingAccount, setViewingAccount] = useState<Account | null>(null);
+  const [fullCookie, setFullCookie] = useState<string>('');
+  const [loadingFullCookie, setLoadingFullCookie] = useState(false);
+
+  // 维护账号
+  const [maintainingAccountId, setMaintainingAccountId] = useState<string | null>(null);
 
   /**
    * 获取账号列表
@@ -291,6 +303,109 @@ export default function AccountsPage() {
       setError(err.message);
       console.error('删除账号失败:', err);
     }
+  };
+
+  /**
+   * 维护账号
+   */
+  const handleMaintainAccount = async (account: Account) => {
+    const savedPassword = localStorage.getItem('admin_password');
+    if (!savedPassword) {
+      router.push('/admin/pool/login');
+      return;
+    }
+
+    try {
+      setMaintainingAccountId(account.id);
+      setError(null);
+
+      const response = await fetch(`/api/pool/accounts/${account.id}/maintain`, {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Basic ' + btoa('super:' + savedPassword),
+        },
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('admin_password');
+        router.push('/admin/pool/login');
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || data.error || '维护失败');
+      }
+
+      setSuccessMessage(data.message || '维护成功');
+      await fetchAccounts();
+      
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: any) {
+      setError(err.message);
+      console.error('维护账号失败:', err);
+    } finally {
+      setMaintainingAccountId(null);
+    }
+  };
+
+  /**
+   * 查看完整 Cookie
+   */
+  const viewFullCookie = async (account: Account) => {
+    const savedPassword = localStorage.getItem('admin_password');
+    if (!savedPassword) {
+      router.push('/admin/pool/login');
+      return;
+    }
+
+    try {
+      setLoadingFullCookie(true);
+      setError(null);
+
+      const response = await fetch(`/api/pool/accounts/${account.id}?full=true`, {
+        headers: {
+          'Authorization': 'Basic ' + btoa('super:' + savedPassword),
+        },
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('admin_password');
+        router.push('/admin/pool/login');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('获取完整 Cookie 失败');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setViewingAccount(account);
+        setFullCookie(data.account.cookie);
+      } else {
+        throw new Error(data.error || '获取完整 Cookie 失败');
+      }
+    } catch (err: any) {
+      setError(err.message);
+      console.error('获取完整 Cookie 失败:', err);
+    } finally {
+      setLoadingFullCookie(false);
+    }
+  };
+
+  /**
+   * 复制到剪贴板
+   */
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setSuccessMessage('已复制到剪贴板');
+      setTimeout(() => setSuccessMessage(null), 2000);
+    }).catch(() => {
+      setError('复制失败');
+    });
   };
 
   /**
@@ -554,6 +669,94 @@ export default function AccountsPage() {
           </div>
         )}
 
+        {/* 查看完整 Cookie 弹窗 */}
+        {viewingAccount && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">查看完整 Cookie</h3>
+                <button
+                  onClick={() => {
+                    setViewingAccount(null);
+                    setFullCookie('');
+                  }}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    账号 ID
+                  </label>
+                  <input
+                    type="text"
+                    value={viewingAccount.id}
+                    disabled
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 font-mono text-sm"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      完整 Cookie
+                    </label>
+                    <button
+                      onClick={() => copyToClipboard(fullCookie)}
+                      className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center"
+                    >
+                      <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      复制
+                    </button>
+                  </div>
+                  {loadingFullCookie ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    </div>
+                  ) : (
+                    <textarea
+                      value={fullCookie}
+                      readOnly
+                      rows={8}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-900 font-mono text-sm"
+                    />
+                  )}
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                  <div className="flex">
+                    <svg className="h-5 w-5 text-yellow-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <p className="text-sm text-yellow-800">
+                      请妥善保管 Cookie 信息，不要泄露给他人
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                  <button
+                    onClick={() => {
+                      setViewingAccount(null);
+                      setFullCookie('');
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  >
+                    关闭
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 账号列表 */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           {accounts.length > 0 ? (
@@ -569,6 +772,9 @@ export default function AccountsPage() {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       状态
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      积分信息
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       支持模型
@@ -591,7 +797,15 @@ export default function AccountsPage() {
                         {account.id.slice(0, 8)}...
                       </td>
                       <td className="px-6 py-4 text-sm font-mono text-gray-500 max-w-xs truncate">
-                        {account.cookie}
+                        <div className="flex items-center">
+                          <span className="truncate">{account.cookie}</span>
+                          <button
+                            onClick={() => viewFullCookie(account)}
+                            className="ml-2 text-indigo-600 hover:text-indigo-700 text-xs whitespace-nowrap"
+                          >
+                            查看
+                          </button>
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
@@ -606,6 +820,33 @@ export default function AccountsPage() {
                         </button>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
+                        {account.creditsLeft !== undefined ? (
+                          <div className="space-y-1">
+                            <div className="flex items-center">
+                              <span className="font-medium text-indigo-600">{account.creditsLeft}</span>
+                              <span className="text-gray-500 ml-1">积分</span>
+                            </div>
+                            {account.monthlyUsage !== undefined && account.monthlyLimit !== undefined && (
+                              <div className="text-xs text-gray-500">
+                                月度: {account.monthlyUsage}/{account.monthlyLimit}
+                              </div>
+                            )}
+                            {account.creditsUpdatedAt && (
+                              <div className="text-xs text-gray-400">
+                                {new Date(account.creditsUpdatedAt).toLocaleString('zh-CN', {
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-xs">未检测</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
                         {account.supportedModels.length > 0
                           ? account.supportedModels.join(', ')
                           : '全部'}
@@ -618,8 +859,28 @@ export default function AccountsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
+                          onClick={() => handleMaintainAccount(account)}
+                          disabled={maintainingAccountId === account.id}
+                          className={`mr-3 ${
+                            maintainingAccountId === account.id
+                              ? 'text-gray-400 cursor-not-allowed'
+                              : account.status === 'active'
+                              ? 'text-green-600 hover:text-green-900'
+                              : 'text-orange-600 hover:text-orange-900'
+                          }`}
+                          title={
+                            maintainingAccountId === account.id
+                              ? '维护中...'
+                              : account.status === 'active'
+                              ? '立即维护此账号'
+                              : '尝试恢复此账号'
+                          }
+                        >
+                          {maintainingAccountId === account.id ? '维护中...' : '维护'}
+                        </button>
+                        <button
                           onClick={() => startEdit(account)}
-                          className="text-indigo-600 hover:text-indigo-900 mr-4"
+                          className="text-indigo-600 hover:text-indigo-900 mr-3"
                         >
                           编辑
                         </button>

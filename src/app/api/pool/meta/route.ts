@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 
     // 获取系统配置
     const twocaptchaKey = dbManager.getConfig('twocaptcha_key');
-    const maintenanceInterval = dbManager.getConfig('maintenance_interval');
+    const maintenanceInterval = dbManager.getConfig('maintenance_interval_minutes');
 
     // 计算下次维护时间
     let nextMaintenance: number | null = null;

@@ -1629,6 +1629,16 @@ class SunoApi {
     const response = await this.client.get(
       `${SunoApi.BASE_URL}/api/billing/info/`
     );
+    
+    // 添加详细日志
+    console.log('=== getCredits 原始响应数据 ===');
+    console.log('完整响应:', JSON.stringify(response.data, null, 2));
+    console.log('total_credits_left:', response.data.total_credits_left);
+    console.log('period:', response.data.period);
+    console.log('monthly_limit:', response.data.monthly_limit);
+    console.log('monthly_usage:', response.data.monthly_usage);
+    console.log('================================');
+    
     return {
       credits_left: response.data.total_credits_left,
       period: response.data.period,

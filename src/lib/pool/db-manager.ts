@@ -13,6 +13,10 @@ export interface Account {
   supportedModels: string[];     // 支持的模型列表,空数组表示支持所有模型
   note: string;                  // 备注信息
   lastUpdated: number;           // 最后更新时间戳(毫秒)
+  creditsLeft?: number;          // 剩余积分
+  monthlyLimit?: number;         // 月度限额
+  monthlyUsage?: number;         // 月度使用量
+  creditsUpdatedAt?: number;     // 积分信息更新时间戳
 }
 
 /**
@@ -101,7 +105,11 @@ export class DBManager {
           status TEXT NOT NULL CHECK(status IN ('active', 'disabled')),
           supported_models TEXT NOT NULL,
           note TEXT NOT NULL DEFAULT '',
-          last_updated INTEGER NOT NULL
+          last_updated INTEGER NOT NULL,
+          credits_left INTEGER,
+          monthly_limit INTEGER,
+          monthly_usage INTEGER,
+          credits_updated_at INTEGER
         );
       `);
 
@@ -178,7 +186,8 @@ export class DBManager {
   public getAccount(id: string): Account | null {
     try {
       const stmt = this.db.prepare(`
-        SELECT id, cookie, status, supported_models, note, last_updated
+        SELECT id, cookie, status, supported_models, note, last_updated,
+               credits_left, monthly_limit, monthly_usage, credits_updated_at
         FROM accounts
         WHERE id = ?
       `);
@@ -193,6 +202,10 @@ export class DBManager {
         supportedModels: JSON.parse(row.supported_models),
         note: row.note,
         lastUpdated: row.last_updated,
+        creditsLeft: row.credits_left,
+        monthlyLimit: row.monthly_limit,
+        monthlyUsage: row.monthly_usage,
+        creditsUpdatedAt: row.credits_updated_at,
       };
     } catch (error) {
       console.error('查询账号失败:', error);
@@ -207,7 +220,8 @@ export class DBManager {
   public getAllAccounts(): Account[] {
     try {
       const stmt = this.db.prepare(`
-        SELECT id, cookie, status, supported_models, note, last_updated
+        SELECT id, cookie, status, supported_models, note, last_updated,
+               credits_left, monthly_limit, monthly_usage, credits_updated_at
         FROM accounts
       `);
 
@@ -220,6 +234,10 @@ export class DBManager {
         supportedModels: JSON.parse(row.supported_models),
         note: row.note,
         lastUpdated: row.last_updated,
+        creditsLeft: row.credits_left,
+        monthlyLimit: row.monthly_limit,
+        monthlyUsage: row.monthly_usage,
+        creditsUpdatedAt: row.credits_updated_at,
       }));
     } catch (error) {
       console.error('查询所有账号失败:', error);
@@ -253,6 +271,22 @@ export class DBManager {
       if (updates.note !== undefined) {
         fields.push('note = ?');
         values.push(updates.note);
+      }
+      if (updates.creditsLeft !== undefined) {
+        fields.push('credits_left = ?');
+        values.push(updates.creditsLeft);
+      }
+      if (updates.monthlyLimit !== undefined) {
+        fields.push('monthly_limit = ?');
+        values.push(updates.monthlyLimit);
+      }
+      if (updates.monthlyUsage !== undefined) {
+        fields.push('monthly_usage = ?');
+        values.push(updates.monthlyUsage);
+      }
+      if (updates.creditsUpdatedAt !== undefined) {
+        fields.push('credits_updated_at = ?');
+        values.push(updates.creditsUpdatedAt);
       }
 
       // 总是更新 lastUpdated

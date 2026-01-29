@@ -53,6 +53,10 @@ export async function POST(req: NextRequest) {
         supportedModels: account.supportedModels,
         note: account.note,
         lastUpdated: account.lastUpdated,
+        creditsLeft: account.creditsLeft,
+        monthlyLimit: account.monthlyLimit,
+        monthlyUsage: account.monthlyUsage,
+        creditsUpdatedAt: account.creditsUpdatedAt,
       },
     });
   } catch (error: any) {
@@ -96,6 +100,10 @@ export async function GET(req: NextRequest) {
       supportedModels: account.supportedModels,
       note: account.note,
       lastUpdated: account.lastUpdated,
+      creditsLeft: account.creditsLeft,
+      monthlyLimit: account.monthlyLimit,
+      monthlyUsage: account.monthlyUsage,
+      creditsUpdatedAt: account.creditsUpdatedAt,
     }));
 
     return NextResponse.json({

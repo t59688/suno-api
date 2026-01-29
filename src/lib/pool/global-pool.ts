@@ -44,8 +44,12 @@ export async function initializeGlobalPool(): Promise<AccountPool> {
       // 初始化账号池
       await pool.initialize();
 
-      // 启动自动维护(默认 15 分钟)
-      const maintenanceInterval = parseInt(process.env.POOL_MAINTENANCE_INTERVAL || '15');
+      // 启动自动维护，从数据库读取配置，默认 15 分钟
+      const maintenanceIntervalConfig = dbManager.getConfig('maintenance_interval_minutes');
+      const maintenanceInterval = maintenanceIntervalConfig 
+        ? parseInt(maintenanceIntervalConfig) 
+        : parseInt(process.env.POOL_MAINTENANCE_INTERVAL || '15');
+      
       pool.startAutoMaintenance(maintenanceInterval);
 
       console.log(`全局账号池初始化完成,自动维护间隔: ${maintenanceInterval} 分钟`);
