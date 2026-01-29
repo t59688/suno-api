@@ -145,39 +145,14 @@ function sanitize(data: any): any {
 /**
  * Validate required environment variables at startup
  * @throws Error if required environment variables are missing or invalid
+ * 
+ * 注意: SUNO_COOKIE 不再是必需的,因为账号池系统会管理所有 Cookie
+ * TWOCAPTCHA_KEY 也可以从数据库配置中读取
  */
 function validateEnvironment(): void {
-  const requiredVars = {
-    SUNO_COOKIE: process.env.SUNO_COOKIE,
-    TWOCAPTCHA_KEY: process.env.TWOCAPTCHA_KEY
-  };
-
-  const missing: string[] = [];
-  const invalid: string[] = [];
-
-  for (const [name, value] of Object.entries(requiredVars)) {
-    if (!value) {
-      missing.push(name);
-    } else if (typeof value !== 'string' || value.trim().length === 0) {
-      invalid.push(name);
-    }
-  }
-
-  if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}. Please set these variables in your .env file or environment.`
-    );
-  }
-
-  if (invalid.length > 0) {
-    throw new Error(
-      `Invalid environment variables (empty or whitespace): ${invalid.join(', ')}`
-    );
-  }
-
-  logger.info('Environment validation passed', {
-    variables: Object.keys(requiredVars)
-  });
+  // 不再验证 SUNO_COOKIE 和 TWOCAPTCHA_KEY
+  // 这些配置现在由账号池系统管理
+  logger.info('Environment validation passed (using account pool system)');
 }
 
 /**
@@ -416,17 +391,24 @@ class SunoApi {
   private deviceId?: string;
   private userAgent?: string;
   private cookies: Record<string, string | undefined>;
-  private solver = new Solver(`${process.env.TWOCAPTCHA_KEY}`);
+  private solver?: Solver; // 改为可选,因为可能从数据库读取 key
   private ghostCursorEnabled = yn(process.env.BROWSER_GHOST_CURSOR, { default: false });
   private cursor?: Cursor;
 
-  constructor(cookies: string) {
-    // Validate required environment variables at startup
-    validateEnvironment();
+  constructor(cookies: string, twocaptchaKey?: string) {
+    // 不再验证环境变量,因为账号池系统会管理配置
+    // validateEnvironment();
 
     this.userAgent = new UserAgent(/Macintosh/).random().toString(); // Usually Mac systems get less amount of CAPTCHAs
     this.cookies = cookie.parse(cookies);
     this.deviceId = this.cookies.ajs_anonymous_id || randomUUID();
+    
+    // 初始化 solver,优先使用传入的 key,否则使用环境变量
+    const captchaKey = twocaptchaKey || process.env.TWOCAPTCHA_KEY;
+    if (captchaKey) {
+      this.solver = new Solver(captchaKey);
+    }
+    
     this.client = axios.create({
       withCredentials: true,
       headers: {
@@ -726,6 +708,10 @@ class SunoApi {
    * @returns CAPTCHA solution or null if failed
    */
   private async solveCaptchaWithRetry(challenge: Locator, isDrag: boolean): Promise<CaptchaSolution | null> {
+    if (!this.solver) {
+      throw new Error('TWOCAPTCHA_KEY not configured. Cannot solve CAPTCHA.');
+    }
+    
     const maxRetries = 3;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
@@ -770,6 +756,10 @@ class SunoApi {
    * @returns true if valid, false if invalid
    */
   private validateDragSolution(solution: CaptchaSolution): boolean {
+    if (!this.solver) {
+      throw new Error('TWOCAPTCHA_KEY not configured. Cannot validate CAPTCHA solution.');
+    }
+    
     if (solution.data.length % 2 !== 0) {
       logger.info('Solution does not have even amount of points required for dragging. Requesting new solution...');
       this.solver.badReport(solution.id);
@@ -1710,6 +1700,7 @@ class SunoApi {
  * Uses per-cookie caching to reuse instances and maintain session state.
  *
  * @param cookie - Optional Suno authentication cookie. Falls back to SUNO_COOKIE environment variable
+ * @param twocaptchaKey - Optional 2Captcha API key. Falls back to TWOCAPTCHA_KEY environment variable
  * @returns Promise resolving to initialized and cached SunoApi instance
  * @throws Error if no valid cookie provided or initialization fails
  *
@@ -1721,11 +1712,14 @@ class SunoApi {
  * // Use custom cookie
  * const api2 = await sunoApi('custom_cookie_value');
  *
+ * // Use custom cookie and captcha key
+ * const api3 = await sunoApi('custom_cookie_value', 'custom_captcha_key');
+ *
  * // Subsequent calls with same cookie return cached instance
  * const sameApi = await sunoApi(); // Returns cached instance
  * ```
  */
-export const sunoApi = async (cookie?: string) => {
+export const sunoApi = async (cookie?: string, twocaptchaKey?: string) => {
   const resolvedCookie = cookie && cookie.includes('__client') ? cookie : process.env.SUNO_COOKIE; // Check for bad `Cookie` header (It's too expensive to actually parse the cookies *here*)
   if (!resolvedCookie) {
     logger.info('No cookie provided! Aborting...\nPlease provide a cookie either in the .env file or in the Cookie header of your request.')
@@ -1738,7 +1732,7 @@ export const sunoApi = async (cookie?: string) => {
     return cachedInstance;
 
   // If not, create a new instance and initialize it
-  const instance = await new SunoApi(resolvedCookie).init();
+  const instance = await new SunoApi(resolvedCookie, twocaptchaKey).init();
   // Cache the initialized instance
   cache.set(resolvedCookie, instance);
 

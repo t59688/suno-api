@@ -1,7 +1,8 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { cookies } from 'next/headers';
 import { sunoApi } from '@/lib/SunoApi';
 import { corsHeaders } from '@/lib/utils';
+import { DBManager } from '@/lib/pool/db-manager';
+import { AccountPool } from '@/lib/pool/account-pool';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,14 +12,39 @@ export async function GET(req: NextRequest) {
       const url = new URL(req.url);
       const songIds = url.searchParams.get('ids');
       const page = url.searchParams.get('page');
-      const cookie = (await cookies()).toString();
+
+      // 获取账号池实例
+      const dbManager = DBManager.getInstance();
+      const accountPool = new AccountPool(dbManager);
+
+      // 从账号池选择账号 (不需要模型筛选)
+      const account = accountPool.selectAccount({
+        requireModelFilter: false,
+      });
+
+      if (!account) {
+        // 没有可用账号
+        return new NextResponse(
+          JSON.stringify({ 
+            error: 'NO_AVAILABLE_ACCOUNTS',
+            message: '没有可用的账号,请稍后重试或联系管理员添加账号'
+          }), 
+          {
+            status: 503,
+            headers: {
+              'Content-Type': 'application/json',
+              ...corsHeaders
+            }
+          }
+        );
+      }
 
       let audioInfo = [];
       if (songIds && songIds.length > 0) {
         const idsArray = songIds.split(',');
-        audioInfo = await (await sunoApi(cookie)).get(idsArray, page);
+        audioInfo = await (await sunoApi(account.cookie)).get(idsArray, page);
       } else {
-        audioInfo = await (await sunoApi(cookie)).get(undefined, page);
+        audioInfo = await (await sunoApi(account.cookie)).get(undefined, page);
       }
 
       return new NextResponse(JSON.stringify(audioInfo), {

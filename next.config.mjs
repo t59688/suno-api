@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 启用 instrumentation 钩子
+  experimental: {
+    instrumentationHook: true,
+    serverMinification: false, // the server minification unfortunately breaks the selector class names
+  },
   webpack: (config, { isServer }) => {
     config.module.rules.push({
       test: /\.(ttf|html)$/i,
@@ -24,13 +29,12 @@ const nextConfig = {
         'ghost-cursor-playwright',
         // 排除其他可能有问题的原生模块
         'pino-pretty',
+        // 排除 better-sqlite3 (账号池数据库)
+        'better-sqlite3',
       ];
     }
 
     return config;
-  },
-  experimental: {
-    serverMinification: false, // the server minification unfortunately breaks the selector class names
   },
 };  
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import Swagger from '../components/Swagger';
+import MainLayout from '../components/MainLayout';
 import spec from './swagger-suno-api.json'; // 直接导入JSON文件
 import Section from '../components/Section';
 import Markdown from 'react-markdown';
@@ -7,7 +8,7 @@ import Markdown from 'react-markdown';
 
 export default function Docs() {
     return (
-        <>
+        <MainLayout>
             <Section className="my-10">
                 <article className="prose lg:prose-lg max-w-3xl pt-10">
                     <h1 className=' text-center text-indigo-900'>
@@ -56,7 +57,7 @@ Feel free to explore the detailed API parameters and conduct tests on this page.
                 </div>
 
             </Section>
-        </>
+        </MainLayout>
 
     );
 }

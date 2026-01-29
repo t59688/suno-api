@@ -1,4 +1,5 @@
 import Section from "./components/Section";
+import MainLayout from "./components/MainLayout";
 import Markdown from 'react-markdown';
 
 
@@ -117,7 +118,7 @@ For more detailed documentation, please check out the demo site:
 
 `;
   return (
-    <>
+    <MainLayout>
       <Section className="">
         <div className="flex flex-col m-auto py-20 text-center items-center justify-center gap-4 my-8
         lg:px-20 px-4
@@ -149,8 +150,6 @@ For more detailed documentation, please check out the demo site:
           </Markdown>
         </article>
       </Section>
-
-
-    </>
+    </MainLayout>
   );
 }

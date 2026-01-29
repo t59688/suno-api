@@ -1,16 +1,41 @@
 import { NextResponse, NextRequest } from "next/server";
-import { cookies } from 'next/headers'
 import { sunoApi } from "@/lib/SunoApi";
 import { corsHeaders } from "@/lib/utils";
+import { DBManager } from "@/lib/pool/db-manager";
+import { AccountPool } from "@/lib/pool/account-pool";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   if (req.method === 'GET') {
     try {
+      // 获取账号池实例
+      const dbManager = DBManager.getInstance();
+      const accountPool = new AccountPool(dbManager);
 
-      const limit = await (await sunoApi((await cookies()).toString())).get_credits();
+      // 从账号池选择账号 (不需要模型筛选)
+      const account = accountPool.selectAccount({
+        requireModelFilter: false,
+      });
 
+      if (!account) {
+        // 没有可用账号
+        return new NextResponse(
+          JSON.stringify({ 
+            error: 'NO_AVAILABLE_ACCOUNTS',
+            message: '没有可用的账号,请稍后重试或联系管理员添加账号'
+          }), 
+          {
+            status: 503,
+            headers: {
+              'Content-Type': 'application/json',
+              ...corsHeaders
+            }
+          }
+        );
+      }
+
+      const limit = await (await sunoApi(account.cookie)).get_credits();
 
       return new NextResponse(JSON.stringify(limit), {
         status: 200,

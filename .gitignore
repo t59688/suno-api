@@ -47,3 +47,6 @@ ccpm/
 .claude/
 install-ccpm.sh
 CLAUDE.md
+data/account-pool.db
+data/account-pool.db-shm
+data/account-pool.db-wal
