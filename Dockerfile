@@ -4,21 +4,21 @@
 # ==========================================
 # APT 镜像: 阿里云 mirrors.aliyun.com
 # NPM 镜像: 淘宝 npmmirror registry.npmmirror.com
-# Playwright: 使用官方源（国内镜像不完整）
+# Playwright: 使用官方镜像（自带浏览器）
 # ==========================================
 
 # ==================== 构建阶段 ====================
-FROM node:20-bullseye AS builder
+FROM mcr.microsoft.com/playwright:v1.52.0-noble AS builder
 WORKDIR /src
 
-# 配置 APT 使用阿里云镜像源
-RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list && \
-    sed -i 's|security.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list
+# 配置 APT 使用阿里云镜像源（Ubuntu Noble）
+RUN sed -i 's|archive.ubuntu.com|mirrors.aliyun.com|g' /etc/apt/sources.list.d/ubuntu.sources && \
+    sed -i 's|security.ubuntu.com|mirrors.aliyun.com|g' /etc/apt/sources.list.d/ubuntu.sources
 
 # 配置 NPM/PNPM 使用淘宝镜像源
 RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.com/
 
-# 构建阶段跳过 Playwright 浏览器下载
+# 构建阶段跳过 Playwright 浏览器下载（镜像已自带）
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
 COPY package*.json ./
@@ -29,34 +29,23 @@ COPY . .
 RUN corepack enable pnpm && pnpm run build
 
 # ==================== 运行阶段 ====================
-FROM node:20-bullseye
+FROM mcr.microsoft.com/playwright:v1.52.0-noble
 WORKDIR /app
 
-# 配置 APT 使用阿里云镜像源
-RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list && \
-    sed -i 's|security.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list
+# 配置 APT 使用阿里云镜像源（Ubuntu Noble）
+RUN sed -i 's|archive.ubuntu.com|mirrors.aliyun.com|g' /etc/apt/sources.list.d/ubuntu.sources && \
+    sed -i 's|security.ubuntu.com|mirrors.aliyun.com|g' /etc/apt/sources.list.d/ubuntu.sources
 
-# 安装系统依赖（使用阿里云镜像加速）
+# 安装额外系统依赖（Playwright 镜像已包含大部分依赖）
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    libnss3 \
-    libdbus-1-3 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxrandr2 \
-    libgbm1 \
-    libxkbcommon0 \
-    libasound2 \
-    libcups2 \
-    xvfb \
     wget \
     curl \
     ca-certificates \
     git \
     bash \
     net-tools \
+    xz-utils \
+    unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -139,22 +128,17 @@ ENV SUNO_COOKIE=${SUNO_COOKIE}
 # Disable GPU acceleration, as with it suno-api won't work in a Docker environment
 ENV BROWSER_DISABLE_GPU=true
 
-# npm install 时跳过 Playwright 浏览器下载（避免国内镜像不完整问题）
+# 跳过 Playwright 浏览器下载（镜像已自带 Chromium/Firefox/WebKit）
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
 # 使用 pnpm 安装运行时依赖（仅生产环境），并输出更详细日志
 RUN corepack enable pnpm && pnpm install --prod --loglevel=debug
 
-# 单独安装 Playwright 浏览器
-# 注意：国内镜像 npmmirror 缺少部分文件，使用官方源下载
-# 如果网络环境允许，可以设置代理加速：
-# ENV HTTPS_PROXY=http://your-proxy:port
-
-RUN pnpm install
-ENV PLAYWRIGHT_DOWNLOAD_HOST=https://npmmirror.com/mirrors/playwright
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=0
-RUN npx playwright install chromium
-# RUN npx playwright install firefox
+# ⚠️ 不需要再执行 npx playwright install
+# mcr.microsoft.com/playwright:v1.52.0-noble 镜像已自带浏览器，与 rebrowser-playwright-core@1.52.0 匹配：
+# - /ms-playwright/chromium-1169
+# - /ms-playwright/chromium_headless_shell-1169
+# - firefox / webkit 等
 
 COPY --from=builder /src/.next ./.next
 COPY --from=builder /src/public ./public
